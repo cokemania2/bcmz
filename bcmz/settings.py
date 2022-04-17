@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-wjcm5$ydz1n-_l4wb+x+!4a^o#l8cj+!g9dlgi*-+u-&y#m#ld
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+AUTH_USER_MODEL = 'account.User'
 
 # Application definition
 
@@ -40,8 +40,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_extensions',
-    
-    'account'
+
+    'account',
 ]
 
 MIDDLEWARE = [
