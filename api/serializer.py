@@ -1,19 +1,18 @@
 import datetime
 import time
+from django.http import request
 
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from account.models import User, Token
 from account.utils import send_meesage, make_hash
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-
     class Meta:
         model = User
-        fields = ['username', 'password']
+        fields = ['email', 'nickname', 'password', 'username', 'phone_number']
 
 
 class InfoCheckSerializer(serializers.Serializer):
@@ -21,6 +20,16 @@ class InfoCheckSerializer(serializers.Serializer):
     nickname = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
     phone_number = serializers.CharField(required=False)
+
+    def is_valid(self, raise_exception=False):
+        for key in self.initial_data:
+            if key in ['username', 'nickname', 'email', 'phone_number']:
+                return super().is_valid(raise_exception)
+        return False
+
+
+class PasswordChecekSerializer(InfoCheckSerializer):
+    password = serializers.CharField(required=True)
 
 
 class TokenSerializer(serializers.ModelSerializer):

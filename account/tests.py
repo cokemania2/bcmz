@@ -4,15 +4,14 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.test import APIClient
 
-from model_mommy import mommy
-
-from account.models import Token
+from account.models import User, Token
 
 
 class BaseSetUpTest(TestCase):
     def setup(self):
-        self.user = mommy.make(
-            get_user_model(), username='123', password='123')
+        self.user = User.objects.create(
+            username='123', password='123',
+            nickname='testman', email='test@email.com')
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
@@ -40,11 +39,14 @@ class userViewTest(BaseSetUpTest):
 
     def test_auth(self):
         self.setup()
-        response = self.client.post('/api/user/id_check/', {'username': '123'})
-        self.assertEqual(response.status_code, 200, "존재하는 아이디")
-        response = self.client.post('/api/user/id_check/', {'username': '312'})
-        self.assertEqual(response.status_code, 402,  "존재하지 않는 아이디")
-        response = self.client.post('/api/mobile_auth/')
+        self.url_setup('/api/user/info_check/', 'POST')
+        self.status_code_test(200, "존재하는 username", {'username': '123'})
+        self.status_code_test(200, "존재하는 nickname", {'nickname': 'testman'})
+        self.status_code_test(200, "존재하는 조합", {'username': '123', 'nickname': 'testman'})
+        self.status_code_test(404, "존재하는 않는 username", {'username': '312'})
+        self.status_code_test(404, "존재하는 않는 param", {'password': '312'})
+        self.status_code_test(404, "존재하는 않는 param", {'ff': '312'})
+        # response = self.client.post('/api/mobile_auth/')
 
     def test_token(self):
         self.url_setup('/api/token/make_wait_token/', 'POST')
