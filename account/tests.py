@@ -11,7 +11,7 @@ from account.models import User, Token
 class BaseSetUpTest(TestCase):
     def setup(self):
         self.user = User.objects.create(
-            username='123', password='123',
+            username='123', password='123', phone_number='01020647744',
             nickname='testman', email='test@email.com')
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -24,9 +24,8 @@ class BaseSetUpTest(TestCase):
         finish_time = timezone.now()
         if accept:
             finish_time = finish_time + datetime.timedelta(minutes=5)
-        self.token = Token(phone_number=number,
-                           finish_time=finish_time,
-                           accepted=accept)
+        Token(phone_number=number, accepted=accept,
+              finish_time=finish_time).save()
 
     def status_code_test(self, code, message, data=None):
         if self.method == 'POST':
@@ -60,17 +59,17 @@ class userViewTest(BaseSetUpTest):
         self.setup_url('/api/user/sign_up/', 'POST')
         self.user_setup()
         self.status_code_test(404, "토큰 없는 회원가입", self.data)
-        self.setup_token('010206477444', False)
+        self.setup_token('01020647744', False)
         self.status_code_test(404, "토큰 미인증 회원가입", self.data)
-        self.setup_token('010206477444', True)
+        self.setup_token('01020647744', True)
         self.status_code_test(201, "정상적인 회원가입", self.data)
-        self.status_code_test(404, "중복 회원가입", self.data)
+        self.status_code_test(400, "중복 회원가입", self.data)
 
         self.setup_token('01011112222', True)
         self.user_setup(phone_number='01011112222')
-        self.status_code_test(404, "이메일 중복 회원가입", self.data)
+        self.status_code_test(400, "이메일 중복 회원가입", self.data)
         self.user_setup(email='dummy@test.com')
-        self.status_code_test(404, "전화번호 중복 회원가입", self.data)
+        self.status_code_test(400, "전화번호 중복 회원가입", self.data)
 
         self.user_setup(email='test2@teset.com', nickname='coke', username='coke', phone_number='01012345678')
         self.setup_token('01012345678', True)

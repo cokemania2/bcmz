@@ -7,8 +7,11 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    nickname = models.CharField(max_length=50)
-    phone_number = models.CharField(max_length=12)
+    email = models.EmailField(unique=True)
+    username = models.CharField(unique=True, max_length=50)
+    phone_number = models.CharField(
+        max_length=12, unique=True)
+    nickname = models.CharField(max_length=50, null=False)
 
 
 class Token(models.Model):
