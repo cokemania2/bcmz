@@ -4,6 +4,7 @@ from random import randint
 
 def send_meesage():
     number = randint(1000, 10000)
+    print("인증 번호 = "+ str(number))
     return number
 
 

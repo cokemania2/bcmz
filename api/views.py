@@ -9,7 +9,8 @@ from django.contrib import auth
 
 from account.models import User, Token
 from api.serializer import (UserSerializer, TokenSerializer,
-                            InfoCheckSerializer, PasswordCheckSerializer)
+                            InfoCheckSerializer, PasswordCheckSerializer,
+                            TokenAuthSerializer)
 
 
 class UserViewSet(viewsets.GenericViewSet):
@@ -64,18 +65,20 @@ class TokenViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['post'])
     def auth_wait_token(self, request):
-        serializer = InfoCheckSerializer(data=request.data)
+        serializer = TokenAuthSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             token = Token.objects.filter(
-                token=serializer.data['token'],
-                phone_number=serializer.data['phone_number'],
-                auth_num=serializer.data['auth_num'],
+                token=serializer.validated_data['token'],
+                phone_number=serializer.validated_data['phone_number'],
+                auth_num=serializer.validated_data['auth_num'],
                 accepted=False,
             )
+            len(token) #? 빼면 오류
             if token.exists():
                 token[0].accepted = True
                 token[0].save()
                 return Response(status=HTTP_200_OK)
+        
         return Response(status=HTTP_404_NOT_FOUND)
 
 
