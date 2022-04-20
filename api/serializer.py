@@ -53,12 +53,12 @@ class TokenSerializer(serializers.ModelSerializer):
         now = timezone.now()
         finish_time = now + datetime.timedelta(minutes=wait_time)
         token, _ = Token.objects.get_or_create(
-            phone_number=validated_data['phone_number'],
-            accepted=False)
+            phone_number=validated_data['phone_number'])
         token.token = make_hash(timestamp + validated_data['phone_number'])
         token.created_time = now
         token.finish_time = finish_time
         token.auth_num = send_meesage()
+        token.accepted = False
         token.save()
         return token
 
