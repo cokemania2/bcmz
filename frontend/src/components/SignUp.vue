@@ -72,12 +72,6 @@ export default {
                     alert('가입 완료되었습니다.')
                 } 
             }).catch(error => {
-                 email: this.email,
-                 username: this.username,
-                 nickname: this.nickname,
-                 phone_number: this.number,
-                 password: this.password 
-            });
                 if (error.response) {
                     if (error.response.status >= 400) {
                         alert('정확한 정보를 입력해주세요')
@@ -170,10 +164,6 @@ export default {
                     this.validated = 0
                 }
             }).catch(error => {
-                'auth_num': this.auth_num, 
-                'phone_number': this.number, 
-                'token': this.token
-            });
                 if (error.response) {
                     if (error.response.status === 404) {
                         alert('인증에 실패하였습니다')
@@ -182,7 +172,7 @@ export default {
                     }
                 }
             })
-        },
+        }
     }
 }
 </script>
