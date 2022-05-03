@@ -73,12 +73,10 @@ class TokenViewSet(viewsets.GenericViewSet):
                 auth_num=serializer.validated_data['auth_num'],
                 accepted=False,
             )
-            len(token) #? 빼면 오류
-            if token.exists():
+            if token:
                 token[0].accepted = True
                 token[0].save()
                 return Response(status=HTTP_200_OK)
-        
         return Response(status=HTTP_404_NOT_FOUND)
 
 

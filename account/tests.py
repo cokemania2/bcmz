@@ -2,7 +2,7 @@ import datetime
 
 from django.test import TestCase
 from django.utils import timezone
-
+from django.conf import settings
 from rest_framework.test import APIClient
 
 from account.models import User, Token
@@ -10,11 +10,13 @@ from account.models import User, Token
 
 class BaseSetUpTest(TestCase):
     def setup(self):
+        settings.PRODUCTION = False
         self.user = User.objects.create(
             username='testuser', password='pw', phone_number='01020647744',
             nickname='testman', email='test@test.com')
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
+
 
     def setup_url(self, url, method):
         self.url = url
@@ -42,7 +44,7 @@ class userViewTest(BaseSetUpTest):
             'nickname': nickname if nickname else 'testman2',
             'password': password if password else 'pw',
             'username': username if username else 'testuser2',
-            'phone_number': phone_number if phone_number else '01020647745'
+            'phone_number': phone_number if phone_number else '01099999999'
         }
 
     # 중복 체크 API
@@ -61,9 +63,9 @@ class userViewTest(BaseSetUpTest):
         self.setup_url('/api/user/sign_up/', 'POST')
         self.user_setup()
         self.status_code_test(404, "토큰 없는 회원가입", self.data)
-        self.setup_token('01020647745', False)
+        self.setup_token('01099999999', False)
         self.status_code_test(404, "토큰 미인증 회원가입", self.data)
-        self.setup_token('01020647745', True)
+        self.setup_token('01099999999', True)
         self.status_code_test(201, "정상적인 회원가입", self.data)
         self.status_code_test(400, "중복 회원가입", self.data)
         self.setup_token('01011112222', True)
@@ -94,13 +96,13 @@ class userViewTest(BaseSetUpTest):
             'username': 'testman2', 'password': 'pw'
         })
         self.status_code_test(200, "전화번호 + 비밀번호 로그인", {
-            'phone_number': '01020647745', 'password': 'pw'
+            'phone_number': '01099999999', 'password': 'pw'
         })
         self.status_code_test(400, "닉네임 + 비밀번호 로그인", {
             'nickname': 'testman2', 'password': 'pw'
         })
         self.status_code_test(400, "전화번호 + 이메일 로그인", {
-            'phone_number': '01020647745', 'email': 'test2@test.com'
+            'phone_number': '01099999999', 'email': 'test2@test.com'
         })
         self.status_code_test(400, "이메일 + 유저네임 로그인", {
             'email': 'test2@test.com', 'username': 'testman2'
@@ -125,22 +127,21 @@ class tokenViewTest(BaseSetUpTest):
         test_token.finish_time = finish_time
         test_token.save()
         test_data = self.status_code_test(
-            201, "번호 생성", {'phone_number': '01093939393', 'wait_time': '5'})
+            201, "번호 생성", {'phone_number': '01000000000', 'wait_time': '5'})
         self.assertEqual(len(Token.objects.all()), 2, "기한 지한 토큰 삭제 확인")
         
-        auth_num = Token.objects.get(phone_number='01093939393').auth_num
         self.setup_url('/api/token/auth_wait_token/', 'POST')
+        auth_num = Token.objects.get(phone_number='01000000000').auth_num
         self.status_code_test(200, "정상 토큰 인증", {
             'token': test_data['token'], 'phone_number': test_data['phone_number'],
             'auth_num': auth_num
         })
         test_token = Token.objects.get(phone_number=test_data['phone_number'])
         self.assertEqual(test_token.accepted, True, "인증 완료 확인")
-        
-        test_data = self.client.post('/api/token/make_wait_token/', {'phone_number': '01096961313', 'wait_time': '5'}).data
+        test_data = self.client.post('/api/token/make_wait_token/', {'phone_number': '01077777777', 'wait_time': '5'}).data
         self.status_code_test(404, "잘못된 인증번호 인증", {
             'token': test_data['token'], 'phone_number': test_data['phone_number'],
-            'auth_num': '0'
+            'auth_num': '09'
         })
         test_token = Token.objects.get(phone_number=test_data['phone_number'])
         self.assertEqual(test_token.accepted, False, "인증 실패 확인")
