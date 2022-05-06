@@ -47,7 +47,7 @@ class userViewTest(BaseSetUpTest):
             'phone_number': phone_number if phone_number else '01099999999'
         }
 
-    # 중복 체크 API
+    # 중복 체크
     def test_info_check(self):
         self.setup()
         self.setup_url('/api/user/info_check/', 'POST')
@@ -58,7 +58,7 @@ class userViewTest(BaseSetUpTest):
         self.status_code_test(400, "식별할수 없는 param", {'nickname': 'testman'})
         self.status_code_test(400, "식별할수 없는 param", {'ff': '312'})
 
-    # 회원가입 체크 API
+    # 회원가입 체크
     def test_sign_up(self):
         self.setup_url('/api/user/sign_up/', 'POST')
         self.user_setup()
@@ -84,29 +84,44 @@ class userViewTest(BaseSetUpTest):
                         phone_number='01033334444')
         self.status_code_test(201, "닉네임 중복 회원가입", self.data)
 
+    # 로그인 체크
     def test_sign_in(self):
         self.setup_url('/api/user/sign_in/', 'POST')
         self.user_setup()
-        User.objects.create(**self.data)
+        user = User.objects.create(**self.data)
+        user.set_password(self.data['password'])
+        user.save()
         self.status_code_test(200, "모든 데이터 로그인", self.data)
         self.status_code_test(200, "이메일 + 비밀번호 로그인", {
-            'email': 'test2@test.com', 'password': 'pw'
+            'email': self.data['email'], 'password': self.data['password']
         })
         self.status_code_test(200, "유저네임 + 비밀번호 로그인", {
-            'username': 'testman2', 'password': 'pw'
+            'username': self.data['username'], 'password': self.data['password']
         })
         self.status_code_test(200, "전화번호 + 비밀번호 로그인", {
-            'phone_number': '01099999999', 'password': 'pw'
+            'phone_number': self.data['phone_number'], 'password': self.data['password']
         })
         self.status_code_test(400, "닉네임 + 비밀번호 로그인", {
-            'nickname': 'testman2', 'password': 'pw'
+            'nickname': self.data['username'], 'password': self.data['password']
         })
-        self.status_code_test(400, "전화번호 + 이메일 로그인", {
-            'phone_number': '01099999999', 'email': 'test2@test.com'
+        self.status_code_test(404, "전화번호 + 이메일 로그인", {
+            'phone_number': self.data['phone_number'], 'email': self.data['email']
         })
-        self.status_code_test(400, "이메일 + 유저네임 로그인", {
-            'email': 'test2@test.com', 'username': 'testman2'
+        self.status_code_test(404, "이메일 + 유저네임 로그인", {
+            'email': self.data['email'], 'username': self.data['username']
         })
+
+    # 비밀번호 찾기 체크
+    def test_reset_password(self):
+        self.user_setup()
+        User.objects.create(**self.data)
+        self.setup_url('/api/user/reset_pw/', 'POST')
+        self.status_code_test(401, "토큰 없는 변경", {'phone_number' : '01099999999'})
+        self.setup_token('01099999999', False)
+        self.status_code_test(401, "토큰 미인증 변경", {'phone_number' : '01099999999'})
+        self.setup_token('01099999999', True)
+        self.status_code_test(200, "정상적인 변경", {'phone_number' : '01099999999',
+                                                  'new_password' : '123123'})
 
 
 class tokenViewTest(BaseSetUpTest):

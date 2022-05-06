@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND,
+    HTTP_401_UNAUTHORIZED
 )
 from django.contrib import auth
 
@@ -16,6 +17,15 @@ from api.serializer import (UserSerializer, TokenSerializer,
 class UserViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def token_check(self, phone_number):
+        token = Token.objects.filter(
+                    phone_number=phone_number,
+                    accepted=True)
+        if token.exists():
+            token.delete()
+            return True
+        return False
 
     @action(detail=False, methods=['post'])
     def info_check(self, request):
@@ -32,12 +42,8 @@ class UserViewSet(viewsets.GenericViewSet):
     def sign_up(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            token = Token.objects.filter(
-                phone_number=serializer.validated_data['phone_number'],
-                accepted=True)
-            if token.exists():
+            if self.token_check(serializer.validated_data['phone_number']):
                 User.objects.create_user(**serializer.validated_data)
-                token[0].delete()
                 return Response(status=HTTP_201_CREATED)
         return Response(status=HTTP_404_NOT_FOUND)
 
@@ -45,11 +51,34 @@ class UserViewSet(viewsets.GenericViewSet):
     def sign_in(self, request):
         serializer = PasswordCheckSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            user = auth.authenticate(**serializer.validated_data)
-            if user:
-                return Response(status=HTTP_200_OK)
-        return Response(HTTP_404_NOT_FOUND)
+            for key in serializer.validated_data:
+                if key in ['username', 'phone_number', 'email']:
+                    try:
+                        login_data = {key : serializer.validated_data[key]}
+                        user = User.objects.get(**login_data)
+                        auth_user = auth.authenticate(request, username=user.username, password=serializer.validated_data['password'])
+                        if auth_user is not None:
+                            return Response(status=HTTP_200_OK)
+                        else:
+                            return Response(status=HTTP_401_UNAUTHORIZED)
+                    except User.DoesNotExist:
+                        return Response(status=HTTP_401_UNAUTHORIZED)
+        return Response(status=HTTP_404_NOT_FOUND)
 
+
+    @action(detail=False, methods=['post'])
+    def reset_pw(self, request):
+        phone_number = request.POST.get('phone_number')
+        new_pw = request.POST.get('new_password')
+        if phone_number and new_pw:
+            if self.token_check(phone_number):
+                try:
+                    user = User.objects.get(phone_number=phone_number)
+                    user.set_password(new_pw)
+                    return Response(status=HTTP_200_OK)
+                except User.DoesNotExist:
+                    return Response(status=HTTP_404_NOT_FOUND)
+        return Response(status=HTTP_401_UNAUTHORIZED)
 
 class TokenViewSet(viewsets.GenericViewSet):
     queryset = Token.objects.filter()

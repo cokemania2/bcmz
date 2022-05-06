@@ -32,7 +32,7 @@ class InfoCheckSerializer(serializers.Serializer):
     def is_valid(self, raise_exception=False):
         for key in self.initial_data:
             if key in ['username', 'email', 'phone_number']:
-                return super().is_valid(raise_exception)
+                return super().is_valid()
         raise ValidationError()
 
 

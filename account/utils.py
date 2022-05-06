@@ -44,7 +44,7 @@ def send_meesage():
     body = json.dumps(body)
     if settings.PRODUCTION:
         res = requests.post(url, data=body, headers=headers)
-        if res.status_code == 200:
+        if res.status_code == 202:
             return number
     else:
         print(f'인증번호  = {number}')
