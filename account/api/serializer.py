@@ -11,13 +11,13 @@ from account.utils import send_meesage, make_hash
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(read_only=True)
-    username = serializers.CharField(required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())])
+    username = serializers.CharField(
+                required=True, validators=[UniqueValidator(queryset=User.objects.all())])
     nickname = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())])
-    phone_number = serializers.CharField(required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())])
+    email = serializers.EmailField(
+                required=True, validators=[UniqueValidator(queryset=User.objects.all())])
+    phone_number = serializers.CharField(
+                required=True, validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = User

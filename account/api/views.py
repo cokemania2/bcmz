@@ -54,9 +54,11 @@ class UserViewSet(viewsets.GenericViewSet):
             for key in serializer.validated_data:
                 if key in ['username', 'phone_number', 'email']:
                     try:
-                        login_data = {key : serializer.validated_data[key]}
+                        login_data = {key: serializer.validated_data[key]}
                         user = User.objects.get(**login_data)
-                        auth_user = auth.authenticate(request, username=user.username, password=serializer.validated_data['password'])
+                        auth_user = auth.authenticate(
+                            request, username=user.username, 
+                            password=serializer.validated_data['password'])
                         if auth_user is not None:
                             return Response(status=HTTP_200_OK)
                         else:
@@ -64,7 +66,6 @@ class UserViewSet(viewsets.GenericViewSet):
                     except User.DoesNotExist:
                         return Response(status=HTTP_401_UNAUTHORIZED)
         return Response(status=HTTP_404_NOT_FOUND)
-
 
     @action(detail=False, methods=['post'])
     def reset_pw(self, request):
@@ -79,6 +80,7 @@ class UserViewSet(viewsets.GenericViewSet):
                 except User.DoesNotExist:
                     return Response(status=HTTP_404_NOT_FOUND)
         return Response(status=HTTP_401_UNAUTHORIZED)
+
 
 class TokenViewSet(viewsets.GenericViewSet):
     queryset = Token.objects.filter()
@@ -107,5 +109,3 @@ class TokenViewSet(viewsets.GenericViewSet):
                 token[0].save()
                 return Response(status=HTTP_200_OK)
         return Response(status=HTTP_404_NOT_FOUND)
-
-
