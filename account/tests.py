@@ -116,12 +116,13 @@ class userViewTest(BaseSetUpTest):
         self.user_setup()
         User.objects.create(**self.data)
         self.setup_url('/api/user/reset_pw/', 'POST')
-        self.status_code_test(401, "토큰 없는 변경", {'phone_number' : '01099999999'})
+        self.status_code_test(401, "토큰 없는 변경", {'phone_number': '01099999999'})
         self.setup_token('01099999999', False)
-        self.status_code_test(401, "토큰 미인증 변경", {'phone_number' : '01099999999'})
+        self.status_code_test(401, "토큰 미인증 변경", {'phone_number': '01099999999'})
         self.setup_token('01099999999', True)
-        self.status_code_test(200, "정상적인 변경", {'phone_number' : '01099999999',
-                                                  'new_password' : '123123'})
+        self.status_code_test(200, "정상적인 변경", {
+                              'phone_number': '01099999999',
+                              'new_password': '123123'})
 
 
 class tokenViewTest(BaseSetUpTest):
@@ -153,7 +154,8 @@ class tokenViewTest(BaseSetUpTest):
         })
         test_token = Token.objects.get(phone_number=test_data['phone_number'])
         self.assertEqual(test_token.accepted, True, "인증 완료 확인")
-        test_data = self.client.post('/api/token/make_wait_token/', {'phone_number': '01077777777', 'wait_time': '5'}).data
+        test_data = self.client.post('/api/token/make_wait_token/', {
+            'phone_number': '01077777777', 'wait_time': '5'}).data
         self.status_code_test(404, "잘못된 인증번호 인증", {
             'token': test_data['token'], 'phone_number': test_data['phone_number'],
             'auth_num': '09'
