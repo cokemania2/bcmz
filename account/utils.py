@@ -7,19 +7,17 @@ import json
 from random import randint
 from django.conf import settings
 
-def	make_signature():
-	time_stamp = str(int(time.time() * 1000))
 
-	access_key = settings.ACCESS_KEY				# access key id (from portal or Sub Account)
-	secret_key = bytes(settings.SCREPT_KEY, 'UTF-8')			# secret key (from portal or Sub Account)
+def make_signature():
+    time_stamp = str(int(time.time() * 1000))
+    access_key = settings.ACCESS_KEY				            # access key id (from portal or Sub Account)
+    secret_key = bytes(settings.SCREPT_KEY, 'UTF-8')			# secret key (from portal or Sub Account)
+    method = "POST"
+    uri = f"/sms/v2/services/{settings.SMS_APP_KEY}/messages"
+    message = bytes(method + " " + uri + "\n" + time_stamp + "\n" + access_key, 'UTF-8')
 
-	method = "POST"
-	uri = f"/sms/v2/services/{settings.SMS_APP_KEY}/messages"
-
-	message = bytes(method + " " + uri + "\n" + time_stamp + "\n" + access_key, 'UTF-8')
-    
-	signingKey = base64.b64encode(hmac.new(secret_key, message, digestmod=hashlib.sha256).digest())
-	return signingKey
+    signingKey = base64.b64encode(hmac.new(secret_key, message, digestmod=hashlib.sha256).digest())
+    return signingKey
 
 
 def send_meesage():
