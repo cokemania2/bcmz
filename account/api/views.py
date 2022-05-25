@@ -9,9 +9,9 @@ from rest_framework.status import (
 from django.contrib import auth
 
 from account.models import User, Token
-from api.serializer import (UserSerializer, TokenSerializer,
-                            InfoCheckSerializer, PasswordCheckSerializer,
-                            TokenAuthSerializer)
+from account.api.serializer import (UserSerializer, TokenSerializer,
+                                    InfoCheckSerializer, PasswordCheckSerializer,
+                                    TokenAuthSerializer)
 
 
 class UserViewSet(viewsets.GenericViewSet):
