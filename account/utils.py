@@ -10,8 +10,8 @@ from django.conf import settings
 
 def make_signature():
     time_stamp = str(int(time.time() * 1000))
-    access_key = settings.ACCESS_KEY				            # access key id (from portal or Sub Account)
-    secret_key = bytes(settings.SCREPT_KEY, 'UTF-8')			# secret key (from portal or Sub Account)
+    access_key = settings.SMS_ACCESS_KEY				            # access key id (from portal or Sub Account)
+    secret_key = bytes(settings.SMS_SECREPT_KEY, 'UTF-8')			# secret key (from portal or Sub Account)
     method = "POST"
     uri = f"/sms/v2/services/{settings.SMS_APP_KEY}/messages"
     message = bytes(method + " " + uri + "\n" + time_stamp + "\n" + access_key, 'UTF-8')
@@ -26,7 +26,7 @@ def send_meesage():
     url = f"https://sens.apigw.ntruss.com/sms/v2/services/{settings.SMS_APP_KEY}/messages"
     headers = {'Content-Type': 'application/json; charset=utf-8',
                'x-ncp-apigw-timestamp': time_stamp,
-               'x-ncp-iam-access-key': settings.ACCESS_KEY,
+               'x-ncp-iam-access-key': settings.SMS_ACCESS_KEY,
                'x-ncp-apigw-signature-v2': make_signature()}
     number = randint(1000, 10000)
     message = f"SMS인증번호는 {number} 입니다. 인증번호를 정확히 입력해주세요."		# 메세지 내용을 저장
