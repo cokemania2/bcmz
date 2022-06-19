@@ -22,6 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-wjcm5$ydz1n-_l4wb+x+!4a^o#l8cj+!g9dlgi*-+u-&y#m#ld'
 
+SMS_SECREPT_KEY = ''
+SMS_APP_KEY = ''
+SMS_ACCESS_KEY = ''
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 PRODUCTION = True
